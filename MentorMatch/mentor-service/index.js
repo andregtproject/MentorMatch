@@ -1,27 +1,44 @@
 const express = require('express');
-const app = express();
 const { Mentor, sequelize } = require('./models/mentor');
+const app = express();
 
 app.use(express.json());
-sequelize.sync();
+
+// Cek koneksi ke database
+sequelize.authenticate()
+  .then(() => {
+    console.log('Koneksi ke database berhasil!');
+  })
+  .catch((err) => {
+    console.error('Gagal terhubung ke database:', err);
+  });
+
+// Sikronisasi database
+sequelize.sync()
+  .then(() => {
+    console.log('Database dan tabel sudah disinkronkan');
+  })
+  .catch((err) => {
+    console.error('Gagal menyinkronkan tabel:', err);
+  });
 
 // POST tambah mentor
 app.post('/mentors', async (req, res) => {
-    try {
-      const { name } = req.body;
-  
-      // Pengecekan duplikasi nama mentor
-      const existing = await Mentor.findOne({ where: { name } });
-      if (existing) {
-        return res.status(400).json({ error: 'Nama mentor sudah terdaftar' });
-      }
-  
-      const mentor = await Mentor.create(req.body);
-      res.status(201).json(mentor);
-    } catch (err) {
-      res.status(500).json({ error: 'Gagal tambah mentor', details: err.message });
+  try {
+    const { name } = req.body;
+
+    // Pengecekan duplikasi nama mentor
+    const existing = await Mentor.findOne({ where: { name } });
+    if (existing) {
+      return res.status(400).json({ error: 'Nama mentor sudah terdaftar' });
     }
-});  
+
+    const mentor = await Mentor.create(req.body);
+    res.status(201).json(mentor);
+  } catch (err) {
+    res.status(500).json({ error: 'Gagal tambah mentor', details: err.message });
+  }
+});
 
 // GET semua mentor
 app.get('/mentors', async (req, res) => {
@@ -68,11 +85,15 @@ app.delete('/mentors/:id', async (req, res) => {
   res.json({ message: 'Mentor berhasil dihapus' });
 });
 
-// DELETE semua mentor + reset ID
+// DELETE semua mentor
 app.delete('/mentors', async (req, res) => {
   try {
+    // Menghapus semua data mentor
     await Mentor.destroy({ where: {}, truncate: true });
-    await sequelize.query("DELETE FROM sqlite_sequence WHERE name='Mentors'");
+
+    // Reset sequence auto-increment untuk tabel Mentor
+    await sequelize.query("ALTER SEQUENCE mentors_id_seq RESTART WITH 1");
+
     res.json({ message: 'Semua mentor berhasil dihapus.' });
   } catch (err) {
     console.error(err);
@@ -80,6 +101,8 @@ app.delete('/mentors', async (req, res) => {
   }
 });
 
+
+// Jalankan server
 app.listen(3001, () => {
   console.log('MentorService running at http://localhost:3001');
 });

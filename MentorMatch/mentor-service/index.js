@@ -124,17 +124,38 @@ app.get('/search/expertise', async (req, res) => {
 // PUT update mentor
 app.put('/mentors/:id', async (req, res) => {
   try {
-    const mentor = await Mentor.findByPk(req.params.id);
+    const { id } = req.params;
+    const { name } = req.body;
+
+    // Cari mentor berdasarkan ID
+    const mentor = await Mentor.findByPk(id);
     if (!mentor) {
       return res.status(404).json({ message: 'Mentor tidak ditemukan' });
     }
 
+    // Cek apakah nama baru sudah digunakan oleh mentor lain
+    if (name && name !== mentor.name) {
+      const existing = await Mentor.findOne({
+        where: {
+          name,
+          id: { [Op.ne]: id }
+        }
+      });
+
+      if (existing) {
+        return res.status(400).json({ error: 'Nama mentor sudah digunakan oleh mentor lain' });
+      }
+    }
+
+    // Update data mentor
     await mentor.update(req.body);
+
     res.json({ message: 'Data mentor diperbarui', mentor });
   } catch (err) {
     res.status(500).json({ error: 'Gagal memperbarui data mentor', details: err.message });
   }
 });
+
 
 // DELETE mentor berdasarkan ID
 app.delete('/mentors/:id', async (req, res) => {

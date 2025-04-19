@@ -104,6 +104,6 @@ app.delete('/mentors', async (req, res) => {
 
 // Jalankan server
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`MentorService running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`MentorService running at http://0.0.0.0:${PORT}`);
 });

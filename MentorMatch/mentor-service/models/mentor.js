@@ -4,12 +4,11 @@ const { Sequelize, DataTypes } = require('sequelize');
 // Konfigurasi koneksi PostgreSQL
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
-  protocol: 'postgres',
   dialectOptions: {
-    ssl: process.env.NODE_ENV === 'production' ? {
+    ssl: {
       require: true,
       rejectUnauthorized: false
-    } : false
+    }
   }
 });
 
@@ -22,10 +21,15 @@ const Mentor = sequelize.define('Mentor', {
   expertise: {
     type: DataTypes.TEXT,
     get() {
-      return this.getDataValue('expertise')?.split(';') || [];
+      const value = this.getDataValue('expertise');
+      return value ? value.split(';') : [];
     },
     set(val) {
-      this.setDataValue('expertise', val.join(';'));
+      if (Array.isArray(val)) {
+        this.setDataValue('expertise', val.join(';'));
+      } else {
+        this.setDataValue('expertise', val || '');
+      }
     },
   },
 });

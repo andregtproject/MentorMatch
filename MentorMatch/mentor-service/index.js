@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const { Mentor, sequelize } = require('./models/mentor');
 const app = express();
@@ -103,7 +104,8 @@ app.delete('/mentors', async (req, res) => {
 
 
 // Jalankan server
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, 'localhost', () => {
-  console.log(`MentorService running at http://localhost:${PORT}`);
+const PORT = process.env.PORT || 3001; 
+const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+app.listen(PORT, HOST, () => {
+  console.log(`MentorService running at http://${HOST}:${PORT}`);
 });

@@ -1,13 +1,15 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
 // Konfigurasi koneksi PostgreSQL
-const sequelize = new Sequelize({
-  dialect: 'postgres',  
-  host: 'localhost',    
-  port: 5432,           
-  username: 'postgres',
-  password: 'IAE123',
-  database: 'mentor_db',
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  protocol: 'postgres',
+  dialectOptions: {
+    ssl: process.env.NODE_ENV === 'production' ? {
+      require: true,
+      rejectUnauthorized: false
+    } : false
+  }
 });
 
 // Mendefinisikan model Mentor

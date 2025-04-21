@@ -1,5 +1,10 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, './.env') }); // Mengarahkan ke .env di folder 'models'
+
 const { Sequelize, DataTypes } = require('sequelize');
+
+// Log untuk debugging
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 // Konfigurasi koneksi PostgreSQL
 const sequelize = new Sequelize(process.env.DATABASE_URL, {

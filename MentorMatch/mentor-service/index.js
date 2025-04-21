@@ -175,9 +175,11 @@ app.delete('/mentors/:id', async (req, res) => {
 // DELETE semua mentor
 app.delete('/mentors', async (req, res) => {
   try {
-    await Mentor.destroy({ where: {}, truncate: true });
-
-    await sequelize.query("ALTER SEQUENCE \"Mentors_id_seq\" RESTART WITH 1");
+    await Mentor.destroy({ 
+      where: {}, 
+      truncate: true,
+      restartIdentity: true // Otomatis reset sequence ke 1
+    });
 
     res.json({ message: 'Semua mentor berhasil dihapus.' });
   } catch (err) {
